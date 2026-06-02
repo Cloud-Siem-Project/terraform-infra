@@ -1,10 +1,3 @@
-# These are your "function parameters" — configurable values
-# referenced throughout the other files as var.name
-#
-# You can override defaults via:
-#   terraform apply -var="environment=prod"
-#   or a terraform.tfvars file
-
 variable "project_name" {
   description = "Project name, used for resource naming"
   type        = string
@@ -23,8 +16,8 @@ variable "aws_region" {
   default     = "eu-central-1"
 }
 
-variable "api_base_url" {
-  description = "API Gateway URL from the pipeline stack (passed to dashboard as env var)"
+variable "custom_domain" {
+  description = "Custom domain for the dashboard (e.g. cloudlogger.com). Empty = use CloudFront default domain."
   type        = string
   default     = ""
 }

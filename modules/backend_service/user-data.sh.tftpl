@@ -1,0 +1,33 @@
+#!/bin/bash
+# CloudSIEM master.py bootstrap.
+# master_py_hash: ${master_py_hash}   # changes here force instance replacement.
+
+set -euxo pipefail
+
+# Fetch master.py from the staging bucket.
+mkdir -p /opt/cloudsiem
+aws s3 cp "s3://${code_bucket}/master.py" /opt/cloudsiem/master.py
+chmod 0644 /opt/cloudsiem/master.py
+
+# systemd unit — restarts on crash, no stdin, journald-managed logs.
+cat > /etc/systemd/system/cloudsiem-master.service <<'UNIT'
+[Unit]
+Description=CloudSIEM Master HTTP API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/cloudsiem/master.py --host 0.0.0.0 --port ${api_port} --api-only
+Restart=always
+RestartSec=5
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now cloudsiem-master
