@@ -24,3 +24,9 @@ variable "cloudfront_arns" {
   description = "CloudFront distribution ARNs the deploy role can invalidate"
   type        = list(string)
 }
+
+variable "lambda_arns" {
+  description = "Lambda function ARNs the deploy role can update"
+  type        = list(string)
+  default     = []
+}

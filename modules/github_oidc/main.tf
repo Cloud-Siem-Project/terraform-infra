@@ -57,6 +57,19 @@ data "aws_iam_policy_document" "deploy" {
     resources = var.cloudfront_arns
   }
 
+  dynamic "statement" {
+    for_each = length(var.lambda_arns) > 0 ? [1] : []
+    content {
+      sid    = "LambdaDeploy"
+      effect = "Allow"
+      actions = [
+        "lambda:UpdateFunctionCode",
+        "lambda:GetFunction",
+      ]
+      resources = var.lambda_arns
+    }
+  }
+
   statement {
     sid    = "SSMRunCommand"
     effect = "Allow"

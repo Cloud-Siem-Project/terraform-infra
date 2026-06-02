@@ -46,6 +46,7 @@ module "github_oidc" {
   github_repos = [
     "Cloud-Siem-Project/frontend",
     "Cloud-Siem-Project/backend",
+    "Cloud-Siem-Project/enrichmentpipeline",
   ]
 
   s3_bucket_arns = [
@@ -55,6 +56,10 @@ module "github_oidc" {
 
   cloudfront_arns = [
     "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${module.dashboard_hosting.distribution_id}",
+  ]
+
+  lambda_arns = [
+    "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${var.project_name}-*",
   ]
 }
 
