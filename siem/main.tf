@@ -261,4 +261,27 @@ module "dashboard_api" {
   ]
 }
 
+# ──────────────────────────────────────────────
+# Phase 9 — Threat intel: blacklist DDB + loader (abuse.ch feed) + flow_detector.
+# flow_detector subscribes to the VPC flow-log group and publishes HIGH events
+# to the custom bus when any VPC ENI talks to/from a blacklisted IP. The
+# existing pipeline persists + alerts + blocks. Needs flow logs + the bus.
+# ──────────────────────────────────────────────
+
+module "threat_intel" {
+  count  = var.enable_threat_intel && var.enable_vpc_flow_logs && var.enable_ingestion ? 1 : 0
+  source = "../modules/threat_intel"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  lambda_src_dir = "${path.root}/../../enrichmentpipeline/src"
+
+  eb_bus_name = module.eventbridge_bus[0].bus_name
+  eb_bus_arn  = module.eventbridge_bus[0].bus_arn
+
+  vpc_flow_log_group_name = module.vpc_flow_logs[0].log_group_name
+  vpc_flow_log_group_arn  = module.vpc_flow_logs[0].log_group_arn
+}
+
 data "aws_caller_identity" "current" {}

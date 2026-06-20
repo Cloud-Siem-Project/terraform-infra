@@ -116,3 +116,27 @@ output "dashboard_api_function" {
   description = "dashboard_api lambda name (null if disabled)"
   value       = try(module.dashboard_api[0].lambda_function_name, null)
 }
+
+# ──────────────────────────────────────────────
+# Phase 9 outputs — threat intel
+# ──────────────────────────────────────────────
+
+output "threat_intel_table" {
+  description = "DDB blacklist table name (null if disabled)"
+  value       = try(module.threat_intel[0].threat_intel_table_name, null)
+}
+
+output "ti_loader_function" {
+  description = "threat-intel loader lambda name (null if disabled)"
+  value       = try(module.threat_intel[0].loader_function_name, null)
+}
+
+output "flow_detector_function" {
+  description = "flow_detector lambda name (null if disabled)"
+  value       = try(module.threat_intel[0].flow_detector_function_name, null)
+}
+
+output "threat_intel_seed_result" {
+  description = "Result of the apply-time blacklist seed invocation (null if disabled)"
+  value       = try(module.threat_intel[0].seed_result, null)
+}

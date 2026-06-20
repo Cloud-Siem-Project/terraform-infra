@@ -88,3 +88,13 @@ variable "enable_dashboard_api" {
   type    = bool
   default = true
 }
+
+# ──────────────────────────────────────────────
+# Phase 9 — Threat intel (blacklist DDB + loader + flow_detector)
+# Needs vpc_flow_logs (CWL group to subscribe) + ingestion (custom bus).
+# ──────────────────────────────────────────────
+
+variable "enable_threat_intel" {
+  type    = bool
+  default = true
+}
