@@ -1,0 +1,40 @@
+#!/bin/bash
+# worker_py_hash: ${worker_py_hash}   # changes here force instance replacement.
+set -euxo pipefail
+
+# python3 is preinstalled on AL2023, Ubuntu 24.04, Debian 12. Belt-and-braces:
+if ! command -v python3 >/dev/null 2>&1; then
+  if command -v dnf >/dev/null 2>&1; then
+    dnf install -y python3
+  elif command -v apt-get >/dev/null 2>&1; then
+    apt-get update && apt-get install -y python3
+  fi
+fi
+
+mkdir -p /opt/cloudsiem
+
+# Embed worker.py directly so we don't need awscli on Debian/Ubuntu boots.
+cat > /opt/cloudsiem/worker.py <<'WORKER_PY_EOF'
+${worker_py_content}
+WORKER_PY_EOF
+chmod 0755 /opt/cloudsiem/worker.py
+
+cat > /etc/systemd/system/cloudsiem-worker.service <<UNIT
+[Unit]
+Description=CloudSIEM Worker Agent (${node_id})
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/cloudsiem/worker.py --master http://${master_private_ip}:${master_port} --node-id ${node_id} --interval ${heartbeat_interval}
+Restart=always
+RestartSec=10
+StandardInput=null
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now cloudsiem-worker
