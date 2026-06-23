@@ -71,3 +71,15 @@ variable "lambda_runtime" {
   type    = string
   default = "python3.13"
 }
+
+variable "evidence_bucket_name" {
+  description = "Evidence bucket name — if set, ti_loader saves the downloaded feed snapshot here"
+  type        = string
+  default     = ""
+}
+
+variable "evidence_bucket_arn" {
+  description = "Evidence bucket ARN — gates the s3:PutObject grant"
+  type        = string
+  default     = ""
+}

@@ -46,6 +46,17 @@ data "aws_iam_policy_document" "loader_policy" {
     ]
     resources = [aws_dynamodb_table.threat_intel.arn]
   }
+
+  # capture the downloaded feed snapshot to the evidence bucket (when wired)
+  dynamic "statement" {
+    for_each = var.evidence_bucket_arn != "" ? [1] : []
+    content {
+      sid       = "EvidenceWrite"
+      effect    = "Allow"
+      actions   = ["s3:PutObject"]
+      resources = ["${var.evidence_bucket_arn}/*"]
+    }
+  }
 }
 
 resource "aws_iam_role_policy" "loader" {
@@ -66,11 +77,12 @@ resource "aws_lambda_function" "loader" {
 
   environment {
     variables = {
-      DDB_TABLE   = aws_dynamodb_table.threat_intel.name
-      FEED_URL    = var.feed_url
-      FEED_SOURCE = var.feed_source
-      TTL_DAYS    = tostring(var.feed_ttl_days)
-      SEED_IPS    = join(",", var.seed_ips)
+      DDB_TABLE       = aws_dynamodb_table.threat_intel.name
+      FEED_URL        = var.feed_url
+      FEED_SOURCE     = var.feed_source
+      TTL_DAYS        = tostring(var.feed_ttl_days)
+      SEED_IPS        = join(",", var.seed_ips)
+      EVIDENCE_BUCKET = var.evidence_bucket_name
     }
   }
 

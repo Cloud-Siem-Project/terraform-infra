@@ -98,3 +98,12 @@ variable "enable_threat_intel" {
   type    = bool
   default = true
 }
+
+# ──────────────────────────────────────────────
+# Phase 10 — Simulator + evidence capture
+# ──────────────────────────────────────────────
+
+variable "enable_simulator" {
+  type    = bool
+  default = true
+}

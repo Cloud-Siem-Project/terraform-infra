@@ -1,0 +1,32 @@
+#!/bin/bash
+# sim_py_hash: ${sim_py_hash}   # changes here force instance replacement.
+set -euxo pipefail
+
+dnf install -y python3 python3-pip
+pip3 install --quiet boto3
+
+mkdir -p /opt/cloudsiem
+cat > /opt/cloudsiem/simulator.py <<'SIM_PY_EOF'
+${sim_py_content}
+SIM_PY_EOF
+chmod 0755 /opt/cloudsiem/simulator.py
+
+cat > /etc/systemd/system/cloudsiem-simulator.service <<UNIT
+[Unit]
+Description=Centinel Traffic Simulator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/cloudsiem/simulator.py --bus ${eb_bus_name} --evidence-bucket ${evidence_bucket} --region ${region} --blacklist-ips ${blacklist_ips} --interval ${interval}
+Restart=always
+RestartSec=10
+StandardInput=null
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now cloudsiem-simulator
