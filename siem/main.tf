@@ -282,6 +282,42 @@ module "threat_intel" {
 
   vpc_flow_log_group_name = module.vpc_flow_logs[0].log_group_name
   vpc_flow_log_group_arn  = module.vpc_flow_logs[0].log_group_arn
+
+  # when the simulator/evidence bucket is on, ti_loader captures the feed snapshot
+  evidence_bucket_name = try(module.evidence[0].bucket_name, "")
+  evidence_bucket_arn  = try(module.evidence[0].bucket_arn, "")
+}
+
+# ──────────────────────────────────────────────
+# Phase 10 — Simulator + evidence capture.
+# A dedicated 'noisy node' generates benign + suspicious DNS/connection traffic
+# (so the pipeline has live activity) and captures downloaded artifacts to an
+# S3 evidence bucket for the malware team. Needs the custom bus.
+# ──────────────────────────────────────────────
+
+module "evidence" {
+  count  = var.enable_simulator ? 1 : 0
+  source = "../modules/evidence_bucket"
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "simulator" {
+  count  = var.enable_simulator && var.enable_ingestion ? 1 : 0
+  source = "../modules/simulator"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  vpc_id              = data.aws_vpc.default.id
+  simulator_py_source = "${path.root}/../../backend/simulator.py"
+
+  eb_bus_name = module.eventbridge_bus[0].bus_name
+  eb_bus_arn  = module.eventbridge_bus[0].bus_arn
+
+  evidence_bucket_name = module.evidence[0].bucket_name
+  evidence_bucket_arn  = module.evidence[0].bucket_arn
 }
 
 data "aws_caller_identity" "current" {}

@@ -140,3 +140,17 @@ output "threat_intel_seed_result" {
   description = "Result of the apply-time blacklist seed invocation (null if disabled)"
   value       = try(module.threat_intel[0].seed_result, null)
 }
+
+# ──────────────────────────────────────────────
+# Phase 10 outputs — simulator + evidence
+# ──────────────────────────────────────────────
+
+output "evidence_bucket" {
+  description = "S3 bucket holding captured artifacts (null if disabled)"
+  value       = try(module.evidence[0].bucket_name, null)
+}
+
+output "simulator_instance_id" {
+  description = "Traffic simulator EC2 instance id (null if disabled)"
+  value       = try(module.simulator[0].instance_id, null)
+}
