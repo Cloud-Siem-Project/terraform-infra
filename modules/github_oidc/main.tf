@@ -82,6 +82,16 @@ data "aws_iam_policy_document" "deploy" {
       "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*",
     ]
   }
+
+  # the deploy workflow resolves the master instance by tag (so a Terraform
+  # replace / new instance id doesn't break it). DescribeInstances has no
+  # resource-level scoping.
+  statement {
+    sid       = "DescribeInstancesForDeploy"
+    effect    = "Allow"
+    actions   = ["ec2:DescribeInstances"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "deploy" {
